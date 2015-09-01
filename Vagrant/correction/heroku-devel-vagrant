@@ -64,6 +64,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		chmod -R g+rwxs /usr/local/rbenv/plugins/rbenv-default-gems
 
 		curl -skL https://raw.githubusercontent.com/tamamushi/scarab/master/Script/template/env.rbenv | cat > /etc/profile.d/rbenv.sh
-		echo "bundler \nrdenv-rehash" >> /usr/local/rbenv/default-gems
+		echo -e "bundler \nrdenv-rehash" >> /usr/local/rbenv/default-gems
 EOT
 	end
