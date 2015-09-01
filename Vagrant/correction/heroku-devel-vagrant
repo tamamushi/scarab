@@ -3,9 +3,6 @@
 # vi: set ts=4 : 
 
 VAGRANTFILE_API_VERSION = "2"
-USER  = "vagrant"
-GROUP = "vagrant"
-HOME  = "/home/vagrant"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	config.vm.box		= "centos65"
@@ -45,13 +42,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		pip install virtualenvwrapper
 
 		## pyenv install
-		git clone git://github.com/yyuu/pyenv.git HOME/.pyenv
-		git clone https://github.com/yyuu/pyenv-pip-rehash.git HOME/.pyenv/plugins
-		git clone git://github.com/yyuu/pyenv-virtualenv.git HOME/.pyenv/plugins
-		curl -skL https://raw.githubusercontent.com/tamamushi/scarab/master/Script/template/env.pyenv | cat >> HOME/.bash_profile
-		chown -R HOME/.pyenv
-		chgrp -R HOME/.pyenv
-		chmod -R g+rwxXs HOME/.pyenv
+		git clone git://github.com/yyuu/pyenv.git /home/vagrant/.pyenv
+		git clone https://github.com/yyuu/pyenv-pip-rehash.git /home/vagrant/.pyenv/plugins
+		git clone git://github.com/yyuu/pyenv-virtualenv.git /home/vagrant/.pyenv/plugins
+		curl -skL https://raw.githubusercontent.com/tamamushi/scarab/master/Script/template/env.pyenv | cat >> /home/vagrant/.bash_profile
+		chown -R vagrant /home/vagrant/.pyenv
+		chgrp -R vagrant /home/vagrant/.pyenv
+		chmod -R g+rwxXs /home/vagrant/.pyenv
 
 		## Need for make enveroiment of ruby delvelopement.
 		yum -y install libcurl-devel
