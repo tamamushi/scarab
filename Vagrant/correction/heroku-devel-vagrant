@@ -14,28 +14,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		vb.memory = "1024"
 	end
 
-	config.vm.provision :shell do | shell |
-		shell.inline="echo $1 >> .bashrc"
-		shell.args	=<<SCRIPT
-export PYENV_ROOT="${HOME}/.pyenv"
-if [ -d "${PYENV_ROOT}" ]; then
-    export PATH=${PYENV_ROOT}/bin:$PATH
-    eval "$(pyenv init -)"
-fi
-SCRIPT
-
 	config.vm.provision :shell, :inline =><<EOT
 		## python2.7 install
+		echo "[Starting installation Development tools]";
 		yum groupinstall -y "Development tools"
-
 		yum install -y wget
 
 		## Need for make enveroiment of python 2.7.10 development.
+		echo "[Starting installation various library for python]";
 		yum install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel
 
 		yum localinstall -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 		yum localinstall -y http://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-11.ius.centos6.noarch.rpm
 
+		echo "[Starting installation Python 2.7]"
 		yum install -y python27
 		yum install -y python27-devel
 		yum install -y python27-setuptools
