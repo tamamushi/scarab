@@ -68,5 +68,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 		curl -skL https://raw.githubusercontent.com/tamamushi/scarab/master/Script/template/env.rbenv | cat > /etc/profile.d/rbenv.sh
 		echo -e "bundler \nrdenv-rehash" >> /usr/local/rbenv/default-gems
+
+		## Heroku toolblet install
+		wget -qO- https://toolbelt.heroku.com/install.sh | sh
 EOT
 	end
