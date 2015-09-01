@@ -45,6 +45,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		git clone git://github.com/yyuu/pyenv.git ~/.pyenv
 		git clone https://github.com/yyuu/pyenv-pip-rehash.git ~/.pyenv/plugins
 		git clone git://github.com/yyuu/pyenv-virtualenv.git ~/.pyenv/plugins
+		curl -skL https://raw.githubusercontent.com/tamamushi/scarab/master/Script/template/env.pyenv | cat >> ~/.bash_profile
 
 		## Need for make enveroiment of ruby delvelopement.
 		yum -y install libcurl-devel
@@ -53,5 +54,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		groupadd rbenv
 		chgrp -R rbenv rbenv
 		chmod -R g+rwxXs rbenv
+
+		git clone git://github.com/sstephenson/ruby-build.git /usr/local/rbenv/plugins/ruby-build
+		chgrp -R rbenv /usr/local/rbenv/plugins/ruby-build
+		chmod -R g+rwxs /usr/local/rbenv/plugins/ruby-build
+
+		git clone git://github.com/sstephenson/rbenv-default-gems.git /usr/local/rbenv/plugins/rbenv-default-gems
+		chgrp -R rbenv /usr/local/rbenv/plugins/rbenv-default-gems
+		chmod -R g+rwxs /usr/local/rbenv/plugins/rbenv-default-gems
+
+		curl -skL https://raw.githubusercontent.com/tamamushi/scarab/master/Script/template/env.rbenv | cat > /etc/profile.d/rbenv.sh
+		echo "bundler \nrdenv-rehash" >> /usr/local/rbenv/default-gems
 EOT
 	end
