@@ -5,7 +5,8 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-	config.vm.box = "centos65"
+	config.vm.box		= "centos65"
+	config.vm.box_url	= "/Users/koube/Google\ ドライブ/vagrant_box/centos65-x86_64-20140116.box"
 	config.vm.network "private_network", ip: "192.168.33.10"
 
 	config.vm.synced_folder "./data", "/vagrant_data"
@@ -44,6 +45,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		mkdir rbenv/shims rbenv/versions rbenv/plugins
 		groupadd rbenv
 		chgrp -R rbenv rbenv
-		chomd -R g+rwxXs rbenv
+		chmod -R g+rwxXs rbenv
 EOT
 	end
