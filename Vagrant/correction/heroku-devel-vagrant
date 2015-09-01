@@ -1,6 +1,6 @@
 # -*- mode: python -*-
 # This vagrant file made for enveroiment of python developement.
-# vi: set ts=4 :
+# vi: set ts=4 : 
 
 VAGRANTFILE_API_VERSION = "2"
 
@@ -13,6 +13,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	config.vm.provider "virtualbox" do |vb|
 		vb.memory = "1024"
 	end
+
+	config.vm.provision :shell do | shell |
+		shell.inline="echo $1 >> .bashrc"
+		shell.args	=<<SCRIPT
+export PYENV_ROOT="${HOME}/.pyenv"
+if [ -d "${PYENV_ROOT}" ]; then
+    export PATH=${PYENV_ROOT}/bin:$PATH
+    eval "$(pyenv init -)"
+fi
+SCRIPT
 
 	config.vm.provision :shell, :inline =><<EOT
 		## python2.7 install
@@ -38,6 +48,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 		pip install virtualenv
 		pip install virtualenvwrapper
+
+		## pyenv install
+		git clone git://github.com/yyuu/pyenv.git ~/.pyenv
+		git clone https://github.com/yyuu/pyenv-pip-rehash.git ~/.pyenv/plugins
+		git clone git://github.com/yyuu/pyenv-virtualenv.git ~/.pyenv/plugins
 
 		## Need for make enveroiment of ruby delvelopement.
 		yum -y install libcurl-devel
