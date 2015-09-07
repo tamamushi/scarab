@@ -7,7 +7,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	config.vm.box		= "centos65" 
 	config.vm.box_url	= "~/vagrantdir/box/centos65-x86_64-20140116.box"
-	config.vm.network "private_network", ip: "192.168.33.10"
+	config.vm.network "private_network", ip: "192.168.33.11"
 
 	config.vm.synced_folder "./data", "/vagrant_data"
 	config.vm.provider "virtualbox" do |vb|
@@ -72,11 +72,31 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		## Heroku toolblet install
 		wget -qO- https://toolbelt.heroku.com/install.sh | sh
 
+		## MySQL Install
+		echo "[Starting installation MySQL community server]"
+		yum -y install http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm
+		yum -y install mysql-community-server
+		chkconfig mysqld on
+
+		nohup /bin/sh /usr/bin/mysqld_safe --datadir=/var/lib/mysql --socket=/var/lib/mysql/mysql.sock \
+			--pid-file=/var/run/mysqld/mysqld.pid --basedir=/usr --user=mysql --skip-grant-tables --skip-networking &
+
+		password=`cat /dev/urandom | LC_CTYPE=C tr -dc ‘[:alnum:]’ | head -c 16 ; echo`
+
+		/usr/bin/mysqladmin drop test -f
+		/usr/bin/mysql -e "delete from user where user = '';" -D mysql
+		/usr/bin/mysql -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" -D mysql
+		/usr/bin/mysql -e "SET PASSWORD FOR 'root'@'::1' = PASSWORD('${password}');" -D mysql
+		/usr/bin/mysql -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${password}');" -D mysql
+		/usr/bin/mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${password}');" -D mysql
+		/usr/bin/mysql -e "grant all privileges on *.* to root@0.0.0.0 identified by '${password} with grant option';" -D mysql
+		/usr/bin/mysqladmin flush-privileges -pnewpassword
+
+		echo ${password} > /etc/my.cnf.d/password
+
 		## Bower Install
 		### nodebrew Install
 		curl -L git.io/nodebrew | perl - setup
 		echo 'export PATH=$HOME/.nodebrew/current/bin:$PATH' >> /nome/vagrant/.bash_profile
-
-
 EOT
 	end
