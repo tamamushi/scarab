@@ -68,7 +68,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		echo "#########[Node.js: nodebrew installation]##########";
 		curl -skL git.io/nodebrew | NODEBREW_ROOT=${UHOME}/.nodebrew perl - setup > /dev/null
 		curl -skL ${GIST_URL}/ed1766e98d59beb076a385135a7d5d0b1280e615/env.nodebrew | cat > /etc/profile.d/nodebrew.sh 
-		cd ${UHOME}; sudo -i -u ${USERNAME} nodebrew install-binary ${NODEJS_VERSION}; cd -
+		cd ${UHOME}; sudo -i -u ${USERNAME} nodebrew install-binary ${NODEJS_VERSION} > /dev/null; cd -
 
 		#echo "#################[Starting installation Python 2.7]##################"
 		#yum install -y python27 python27-devel python27-setuptools python27-mod_wsgi > /dev/null
@@ -108,8 +108,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			sleep 10
 		done
 
-		echo -e "Try to drop test database ...."
-		/usr/bin/mysql -uroot -e 'DROP DATABASE IF EXISTS test;'; echo -e $? && echo "ok" || echo "can't drop test database!"
+		echo -e "Try to drop test database"
+		/usr/bin/mysql -uroot -e 'DROP DATABASE IF EXISTS test;';
 		/usr/bin/mysql -uroot -e "delete from mysql.user where user = '';" -D mysql
 		/usr/bin/mysql -uroot -e "DELETE FROM mysql.user WHERE user='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" -D mysql
 		/usr/bin/mysql -uroot -e "SET PASSWORD FOR 'root'@'::1' = PASSWORD('${pass}');" -D mysql
