@@ -66,7 +66,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 		### nodebrew Install
 		echo "#########[Node.js: nodebrew installation]##########";
-		curl -skL git.io/nodebrew | NODEBREW_ROOT=${UHOME}/.nodebrew perl - setup > /dev/null
+		curl -skL git.io/nodebrew | sudo -i -u ${USERNAME} NODEBREW_ROOT=${UHOME}/.nodebrew perl - setup > /dev/null
 		curl -skL ${GIST_URL}/ed1766e98d59beb076a385135a7d5d0b1280e615/env.nodebrew | cat > /etc/profile.d/nodebrew.sh 
 		cd ${UHOME}; sudo -i -u ${USERNAME} nodebrew install-binary ${NODEJS_VERSION} > /dev/null; cd -
 
