@@ -9,8 +9,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	config.vm.box		= "centos65" 
 	config.vm.box_url	= "~/vagrantdir/box/centos65-x86_64-20140116.box"
 	config.vm.network "private_network", ip: "#{ENV['PRIVATE_NETWORK_IP_ADDRESS']}"
+	config.vm.network "public_network", ip: "#{ENV['PUBLIC_NETWORK_IP_ADDRESS']}", bridge: "#{ENV['PUBLIC_NETWORK_INTERFACE']}"
 
 	config.vm.synced_folder "./data", "/vagrant_data"
+	config.vm.synced_folder "#{ENV['PACKAGE_SRC_FOLDER']}", "/pkgsrc"
 	config.vm.provider "virtualbox" do |vb|
 		vb.memory = "1024"
 	end
@@ -20,15 +22,31 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		ENV_USER="#{ENV['USER_NAME']}"
 		USERNAME=${ENV_USER:-vagrant}
 		UHOME="/home/${USERNAME}"
+		[ ! -z ${NPM_LOCAL_REPO:="#{ENV['NPM_LOCAL_REPO']}"} ] && NPM_LOCAL_REPO="--registry=#{ENV['NPM_LOCAL_REPO']}"
 
 		PYTHON_VERSION="2.7.10"
 		RUBY_VERSION="2.2.3"
 		NODEJS_VERSION="0.12.7"
 
+		calc_duration()
+		{
+			PT=`expr $2 - $1`	
+			H=`expr ${PT} / 3600`; PT=`expr ${PT} % 3600`
+			M=`expr ${PT} / 60`; S=`expr ${PT} % 60`
+			echo "Pass to duration ... ${H}:${M}:${S}"
+		}
+
+		TIME_START=`date +%s`
+		cp /pkgsrc/local.repo /etc/yum.repos.d/
+		mkdir -p /var/provision
 		## python2.7 install
-		echo "##############[Starting installation Development tools]##############";
-		yum groupinstall -y "Development tools" > /dev/null
-		yum install -y wget > /dev/null
+		if [ ! -f /var/provision/devtool ]; then
+				echo "##############[Starting installation Development tools]##############";
+			yum groupinstall -y "Development tools" > /dev/null
+			yum install -y wget > /dev/null
+			touch /var/provision/devtool
+		fi
+		calc_duration ${TIME_START} `date +%s`
 
 		## pyenv install
 		echo "####################[Python: pyenv installation]###################"
@@ -37,6 +55,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		git clone git://github.com/yyuu/pyenv-virtualenv.git ${UHOME}/.pyenv/plugins/pyenv-virtualenv 
 		curl -skL ${GIST_URL}/1491c6de2caf5349149a35087c1b4e9a26641244/env.pyenv | cat > /etc/profile.d/pyenv.sh 
 		chown -R ${USERNAME} ${UHOME}/.pyenv; chgrp -R ${USERNAME} ${UHOME}/.pyenv; chmod -R g+rwxXs ${UHOME}/.pyenv 
+		calc_duration ${TIME_START} `date +%s`
 
 		## Need for make enveroiment of python 2.7.10 development.
 		echo "#########[Starting installation various library for python]##########";
@@ -44,7 +63,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 		yum localinstall -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm > /dev/null
 		yum localinstall -y http://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-11.ius.centos6.noarch.rpm > /dev/null
-		sudo -i -u ${USERNAME} pyenv install ${PYTHON_VERSION}
+		sudo -i -u ${USERNAME} sh -c "export PYTHON_BUILD_CACHE_PATH='/pkgsrc/pyenv'; pyenv install ${PYTHON_VERSION}";
+		calc_duration ${TIME_START} `date +%s`
 
 		## rbenv install.
 		yum -y install libcurl-devel > /dev/null
@@ -61,8 +81,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		chgrp -R ${USERNAME} ${PLUGINS_DIR}/rbenv-default-gems; chmod -R g+rwxs ${PLUGINS_DIR}/rbenv-default-gems
 
 		curl -skL ${GIST_URL}/ed1766e98d59beb076a385135a7d5d0b1280e615/env.rbenv | cat > /etc/profile.d/rbenv.sh
-		echo -e "bundler" >> ${UHOME}/.rbenv/default-gems
-		sudo -i -u ${USERNAME} rbenv install ${RUBY_VERSION}
+		#echo -e "bundler" >> ${UHOME}/.rbenv/default-gems
+		sudo -i -u ${USERNAME} sh -c "CONFIGURE_OPTS='--disable-install-rdoc' RUBY_BUILD_CACHE_PATH='/pkgsrc/rbenv' rbenv install ${RUBY_VERSION}";
+		calc_duration ${TIME_START} `date +%s`
 
 		### nodebrew Install
 		echo "#########[Node.js: nodebrew installation]##########";
@@ -71,7 +92,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		echo "##########[Node.js: node.js installation]##########";
 		cd ${UHOME}; 
 		sudo -i -u ${USERNAME} sh -c "nodebrew install-binary ${NODEJS_VERSION} 2> /dev/null; nodebrew use v${NODEJS_VERSION}; node -v"; 
+		sudo -i -u ${USERNAME} sh -c "npm install ${NPM_LOCAL_REPO} -g grunt-cli";
+		sudo -i -u ${USERNAME} sh -c "npm install ${NPM_LOCAL_REPO} -g bower";
 		cd -
+		calc_duration ${TIME_START} `date +%s`
 
 		#echo "#################[Starting installation Python 2.7]##################"
 		#yum install -y python27 python27-devel python27-setuptools python27-mod_wsgi > /dev/null
@@ -93,38 +117,42 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 		## MySQL Install
 		echo "[Starting installation MySQL community server]"
-		yum -y install http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm  > /dev/null
+		#yum -y install http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm  > /dev/null
 		yum -y install mysql-community-server > /dev/null
 		chkconfig mysqld on
 
-		echo "mysqld starting"
-		chkconfig mysqld on
-		service mysqld start 
-		pass=`head /dev/urandom | sha1sum | LC_CTYPE=C tr -dc ‘[:alnum:]’ | head -c 16 ; echo`
+		if [ ! `yum list installed | grep mysql-community-server` ]; then
+				echo "Mysql installed failed"
+		else
+			echo "mysqld starting"
+			chkconfig mysqld on
+			service mysqld start 
+			pass=`head /dev/urandom | sha1sum | LC_CTYPE=C tr -dc ‘[:alnum:]’ | head -c 16 ; echo`
 
-		while :
-		do
-			[ -r /var/run/mysqld/mysqld.pid ] || continue
-			if ps -ef | grep -q $(cat /var/run/mysqld/mysqld.pid); then
-				break;
-			fi
-			sleep 10
-		done
+			while :
+			do
+				[ -r /var/run/mysqld/mysqld.pid ] || continue
+				if ps -ef | grep -q $(cat /var/run/mysqld/mysqld.pid); then
+					break;
+				fi
+				sleep 10
+			done
 
-		echo -e "Try to drop test database"
-		/usr/bin/mysql -uroot -e 'DROP DATABASE IF EXISTS test;';
-		/usr/bin/mysql -uroot -e "delete from mysql.user where user = '';" -D mysql
-		/usr/bin/mysql -uroot -e "DELETE FROM mysql.user WHERE user='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" -D mysql
-		/usr/bin/mysql -uroot -e "SET PASSWORD FOR 'root'@'::1' = PASSWORD('${pass}');" -D mysql
-		/usr/bin/mysql -uroot -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${pass}');" -D mysql
-		/usr/bin/mysql -uroot -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${pass}');" -D mysql
-		echo "Allowed to coonections from 192.168.* "
-		/usr/bin/mysql --defaults-extra-file=<(printf '[client]\npassword=%s' ${pass}) -uroot \
-				-e "GRANT ALL PRIVILEGES ON *.* to root@'192.168.%' identified by '${pass}' with grant option;" -D mysql
-		echo "Change root user password ${pass}"
-		/usr/bin/mysqladmin --defaults-extra-file=<(printf '[client]\npassword=%s' ${pass}) -uroot flush-privileges 
-
-		echo ${pass} > /etc/my.cnf.d/password
-
+			echo -e "Try to drop test database"
+			/usr/bin/mysql -uroot -e 'DROP DATABASE IF EXISTS test;';
+			/usr/bin/mysql -uroot -e "delete from mysql.user where user = '';" -D mysql
+			/usr/bin/mysql -uroot -e "DELETE FROM mysql.user WHERE user='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" -D mysql
+			/usr/bin/mysql -uroot -e "SET PASSWORD FOR 'root'@'::1' = PASSWORD('${pass}');" -D mysql
+			/usr/bin/mysql -uroot -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${pass}');" -D mysql
+			/usr/bin/mysql -uroot -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${pass}');" -D mysql
+			echo "Allowed to coonections from 192.168.* "
+			/usr/bin/mysql --defaults-extra-file=<(printf '[client]\npassword=%s' ${pass}) -uroot \
+					-e "GRANT ALL PRIVILEGES ON *.* to root@'192.168.%' identified by '${pass}' with grant option;" -D mysql
+			echo "Change root user password ${pass}"
+			/usr/bin/mysqladmin --defaults-extra-file=<(printf '[client]\npassword=%s' ${pass}) -uroot flush-privileges 
+		
+			echo ${pass} > /etc/my.cnf.d/password
+		fi
+		calc_duration ${TIME_START} `date +%s`
 EOT
 	end
