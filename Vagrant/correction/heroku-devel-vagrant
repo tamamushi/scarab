@@ -43,6 +43,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		if [ ! -f /var/provision/devtool ]; then
 				echo "##############[Starting installation Development tools]##############";
 			yum groupinstall -y "Development tools" > /dev/null
+			yum groupinstall -y "Japanese Support" > /dev/null
+			localedef -f UTF-8 -i ja_JP ja_JP.utf-8
+			sed -e "s/^LANG=.*$/LANG=\"ja_JP.utf-8\"/" /etc/sysconfig/i18n > /etc/sysconfig/i18n
 			yum install -y wget > /dev/null
 			touch /var/provision/devtool
 		fi
