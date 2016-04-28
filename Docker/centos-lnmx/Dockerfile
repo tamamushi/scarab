@@ -1,12 +1,5 @@
 FROM centos:centos6.7
+MAINTAINER tomoyuki.koube <tomoyuki.koube@grrow.bz>
 
-ENV APP_HOME /app
-
-WORKDIR $APP_HOME
-ADD Gemfile* $APP_HOME/
-RUN bundle install
-ADD . $APP_HOME
-
-EXPOSE 3000
-
-CMD ["bundle", "exec", "rails", "s"]
+RUN yum -y install http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm && \
+	> /dev/null && yum -y install mysql-community-server >& /dev/null && chkconfig mysqld on
