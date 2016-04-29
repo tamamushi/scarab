@@ -1,0 +1,161 @@
+# -*- mode: python -*-
+# This vagrant file made for enveroiment of python developement.
+# vi: set ts=4 : 
+
+Dotenv.load
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+	config.vm.box		= "cos67-lvm" 
+	config.vm.box_url	= "~/GoogleDrive/box_build/vagrant_box/CentOS-6.7-x86_64-lvm-with-docker.box"
+	config.vm.network "private_network", ip: "#{ENV['PRIVATE_NETWORK_IP_ADDRESS']}"
+	config.vm.network "public_network", ip: "#{ENV['PUBLIC_NETWORK_IP_ADDRESS']}", bridge: "#{ENV['PUBLIC_NETWORK_INTERFACE']}"
+
+	config.vm.synced_folder "./data", "/vagrant_data"
+	config.vm.synced_folder "#{ENV['PACKAGE_SRC_FOLDER']}", "/pkgsrc"
+	config.vm.provider "virtualbox" do |vb|
+		vb.memory = "1024"
+	end
+
+	config.vm.provision :shell, :inline =><<EOT
+		GIST_URL='https://gist.githubusercontent.com/tamamushi/4358ca63e40862aaf242/raw'
+		ENV_USER="#{ENV['USER_NAME']}"
+		USERNAME=${ENV_USER:-vagrant}
+		UHOME="/home/${USERNAME}"
+		[ ! -z ${NPM_LOCAL_REPO:="#{ENV['NPM_LOCAL_REPO']}"} ] && NPM_LOCAL_REPO="--registry=#{ENV['NPM_LOCAL_REPO']}"
+
+		PYTHON_VERSION="2.7.10"
+		RUBY_VERSION="2.2.3"
+		NODEJS_VERSION="0.12.7"
+
+		calc_duration()
+		{
+			PT=`expr $2 - $1`	
+			H=`expr ${PT} / 3600`; PT=`expr ${PT} % 3600`
+			M=`expr ${PT} / 60`; S=`expr ${PT} % 60`
+			echo "Pass to duration ... ${H}:${M}:${S}"
+		}
+
+		TIME_START=`date +%s`
+		cp /pkgsrc/local.repo /etc/yum.repos.d/
+		mkdir -p /var/provision
+		## python2.7 install
+		if [ ! -f /var/provision/devtool ]; then
+				echo "##############[Starting installation Development tools]##############";
+			yum groupinstall -y "Development tools" > /dev/null
+			yum groupinstall -y "Japanese Support" > /dev/null
+			localedef -f UTF-8 -i ja_JP ja_JP.utf-8
+			sed -e "s/^LANG=.*$/LANG=\"ja_JP.utf-8\"/" /etc/sysconfig/i18n > /etc/sysconfig/i18n
+			yum install -y wget > /dev/null
+			touch /var/provision/devtool
+		fi
+		calc_duration ${TIME_START} `date +%s`
+
+		## pyenv install
+		echo "####################[Python: pyenv installation]###################"
+		git clone git://github.com/yyuu/pyenv.git ${UHOME}/.pyenv/ 
+		git clone https://github.com/yyuu/pyenv-pip-rehash.git ${UHOME}/.pyenv/plugins/pyenv-pip-rehash 
+		git clone git://github.com/yyuu/pyenv-virtualenv.git ${UHOME}/.pyenv/plugins/pyenv-virtualenv 
+		curl -skL ${GIST_URL}/1491c6de2caf5349149a35087c1b4e9a26641244/env.pyenv | cat > /etc/profile.d/pyenv.sh 
+		chown -R ${USERNAME} ${UHOME}/.pyenv; chgrp -R ${USERNAME} ${UHOME}/.pyenv; chmod -R g+rwxXs ${UHOME}/.pyenv 
+		calc_duration ${TIME_START} `date +%s`
+
+		## Need for make enveroiment of python 2.7.10 development.
+		echo "#########[Starting installation various library for python]##########";
+		yum install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel > /dev/null
+
+		yum localinstall -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm > /dev/null
+		yum localinstall -y http://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-11.ius.centos6.noarch.rpm > /dev/null
+		sudo -i -u ${USERNAME} sh -c "export PYTHON_BUILD_CACHE_PATH='/pkgsrc/pyenv'; pyenv install ${PYTHON_VERSION}";
+		calc_duration ${TIME_START} `date +%s`
+
+		## rbenv install.
+		yum -y install libcurl-devel > /dev/null
+		echo "####################[Ruby: rbenv installation]###################"
+		git clone git://github.com/sstephenson/rbenv.git ${UHOME}/.rbenv
+		mkdir ${UHOME}/.rbenv/shims ${UHOME}/.rbenv/versions ${UHOME}/.rbenv/plugins
+		chown -R ${USERNAME} ${UHOME}/.rbenv; chgrp -R ${USERNAME} ${UHOME}/.rbenv; chmod -R g+rwxXs ${UHOME}/.rbenv; 
+
+		PLUGINS_DIR="${UHOME}/.rbenv/plugins"
+		git clone git://github.com/sstephenson/ruby-build.git ${UHOME}/.rbenv/plugins/ruby-build
+		chgrp -R ${USERNAME} ${PLUGINS_DIR}/ruby-build; chmod -R g+rwxs ${PLUGINS_DIR}/ruby-build
+
+		git clone git://github.com/sstephenson/rbenv-default-gems.git ${UHOME}/.rbenv/plugins/rbenv-default-gems
+		chgrp -R ${USERNAME} ${PLUGINS_DIR}/rbenv-default-gems; chmod -R g+rwxs ${PLUGINS_DIR}/rbenv-default-gems
+
+		curl -skL ${GIST_URL}/ed1766e98d59beb076a385135a7d5d0b1280e615/env.rbenv | cat > /etc/profile.d/rbenv.sh
+		#echo -e "bundler" >> ${UHOME}/.rbenv/default-gems
+		sudo -i -u ${USERNAME} sh -c "CONFIGURE_OPTS='--disable-install-rdoc' RUBY_BUILD_CACHE_PATH='/pkgsrc/rbenv' rbenv install ${RUBY_VERSION}";
+		calc_duration ${TIME_START} `date +%s`
+
+		### nodebrew Install
+		echo "#########[Node.js: nodebrew installation]##########";
+		curl -skL git.io/nodebrew | sudo -i -u ${USERNAME} NODEBREW_ROOT=${UHOME}/.nodebrew perl - setup > /dev/null
+		curl -skL ${GIST_URL}/ed1766e98d59beb076a385135a7d5d0b1280e615/env.nodebrew | cat > /etc/profile.d/nodebrew.sh 
+		echo "##########[Node.js: node.js installation]##########";
+		cd ${UHOME}; 
+		sudo -i -u ${USERNAME} sh -c "nodebrew install-binary ${NODEJS_VERSION} 2> /dev/null; nodebrew use v${NODEJS_VERSION}; node -v"; 
+		sudo -i -u ${USERNAME} sh -c "npm install ${NPM_LOCAL_REPO} -g grunt-cli";
+		sudo -i -u ${USERNAME} sh -c "npm install ${NPM_LOCAL_REPO} -g bower";
+		cd -
+		calc_duration ${TIME_START} `date +%s`
+
+		#echo "#################[Starting installation Python 2.7]##################"
+		#yum install -y python27 python27-devel python27-setuptools python27-mod_wsgi > /dev/null
+
+		## Easy_install install
+		#echo "#########[Python: Eazy_install installation for Python 2.7]##########"
+		#curl -skL https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py | /usr/bin/python2.7 > /dev/null
+		## pip install
+		#echo "#############[Python: pip installation for Python 2.7]##############"
+		#curl -skL https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py | /usr/bin/python2.7 > /dev/null
+
+		#pip install virtualenv
+		#pip install virtualenvwrapper
+
+		## Heroku toolblet install
+		echo "################[Heroku Tool Blet installation]#################"
+		wget -qO- https://toolbelt.heroku.com/install.sh | sh
+		echo 'PATH="/usr/local/heroku/bin:$PATH"' >> ${UHOME}/.bash_profile
+
+		## MySQL Install
+		echo "[Starting installation MySQL community server]"
+		#yum -y install http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm  > /dev/null
+		yum -y install mysql-community-server > /dev/null
+		chkconfig mysqld on
+
+		if [ ! `yum list installed | grep mysql-community-server` ]; then
+				echo "Mysql installed failed"
+		else
+			echo "mysqld starting"
+			chkconfig mysqld on
+			service mysqld start 
+			pass=`head /dev/urandom | sha1sum | LC_CTYPE=C tr -dc ‘[:alnum:]’ | head -c 16 ; echo`
+
+			while :
+			do
+				[ -r /var/run/mysqld/mysqld.pid ] || continue
+				if ps -ef | grep -q $(cat /var/run/mysqld/mysqld.pid); then
+					break;
+				fi
+				sleep 10
+			done
+
+			echo -e "Try to drop test database"
+			/usr/bin/mysql -uroot -e 'DROP DATABASE IF EXISTS test;';
+			/usr/bin/mysql -uroot -e "delete from mysql.user where user = '';" -D mysql
+			/usr/bin/mysql -uroot -e "DELETE FROM mysql.user WHERE user='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" -D mysql
+			/usr/bin/mysql -uroot -e "SET PASSWORD FOR 'root'@'::1' = PASSWORD('${pass}');" -D mysql
+			/usr/bin/mysql -uroot -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${pass}');" -D mysql
+			/usr/bin/mysql -uroot -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${pass}');" -D mysql
+			echo "Allowed to coonections from 192.168.* "
+			/usr/bin/mysql --defaults-extra-file=<(printf '[client]\npassword=%s' ${pass}) -uroot \
+					-e "GRANT ALL PRIVILEGES ON *.* to root@'192.168.%' identified by '${pass}' with grant option;" -D mysql
+			echo "Change root user password ${pass}"
+			/usr/bin/mysqladmin --defaults-extra-file=<(printf '[client]\npassword=%s' ${pass}) -uroot flush-privileges 
+		
+			echo ${pass} > /etc/my.cnf.d/password
+		fi
+		calc_duration ${TIME_START} `date +%s`
+EOT
+	end
