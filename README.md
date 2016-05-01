@@ -26,7 +26,7 @@ MySQLは公式の**docker-entorypoint.sh**を使う為、**5.7.12**を使用。
 中で`mysqld --initialize-insecure`を使っている箇所が有り、MySQLのバージョン
 **5.7.6**以降のバージョンとした。
 
-######補足：よく考えたら5.6のバージョン使ってるMySQLのdockerイメージが有るわけ
+補足：よく考えたら5.6のバージョン使ってるMySQLのdockerイメージが有るわけ
 だからそっちの**docker-entrypoint.sh**なら旧来のやり方なんじゃないか？と思い
 確認してみたらやっぱそうだった。現時点（2016年5月1日）で、
 `mysqld --initialize-insecure`がどの程度こなれてるのかは不明だが、
