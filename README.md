@@ -1,35 +1,35 @@
 <!-- vim: set ts=4 expandtab: -->
 
-## $B%7%9%F%`4D6-$N%=!<%9%3!<%I(B
+## システム環境のソースコード
 
-$B3+H/4D6-$d%F%9%H7OEy(Bpublic$B$K;/$7$F$bLdBj$N$J$$%$%s%U%i7O%$%a!<%8:n@.;~$K(B
-$B;H$C$?%=!<%9%3!<%I$rJ]4I$7$F$$$^$9!#$"$/$^$G%=!<%9%3!<%I$N$_$NJ]4I>l=j$H(B
-$B$7$F;H$$$^$9!#(B
+開発環境やテスト系等publicに晒しても問題のないインフラ系イメージ作成時に
+使ったソースコードを保管しています。あくまでソースコードのみの保管場所と
+して使います。
 <br>
-$B%$%a!<%82=$7$?$b$N$O$=$l@lMQ$N%l%]%8%H%j$J$j!"<+J,$N4D6-Fb$KJ];}$9$k$h$&(B
-$B$K$7$F$/$@$5$$!#4V0c$C$F$b$3$N%l%]%8%H%j$KEPO?$7$?$j$7$J$$$h$&$K5$$r$D$1(B
-$B$^$7$g$&!#(B
+イメージ化したものはそれ専用のレポジトリなり、自分の環境内に保持するよう
+にしてください。間違ってもこのレポジトリに登録したりしないように気をつけ
+ましょう。
 
-### $B8=:_M-8z$J%=!<%9%3!<%I(B
+### 現在有効なソースコード
 
 Docker 
 - centos-lnmx
-CentOS 6.7$B!J(BPacker$B$+$iFH<+$G:n@.$7$?$b$N!K(B<br>
+CentOS 6.7（Packerから独自で作成したもの）<br>
 MySQL 5.7.12<br>
-HHVM 3.2.0 $B!J(BPHP$B2>A[<B9T4D6-!K(B<br>
+HHVM 3.2.0 （PHP仮想実行環境）<br>
 
-MySQL$B$O8x<0$N(Bdocker-entorypoint.sh$B$r;H$&0Y!"(B5.7.12$B$r;HMQ!#(B
-5.7.6$B0J9_$+$i!"=i4|2=$,(Bmysql_install_db$B$+$i(B'''mysqld --initialize'''$B$K(B
-$BJQ99$K$J$C$?!#(B
+MySQLは公式のdocker-entorypoint.shを使う為、5.7.12を使用。
+5.7.6以降から、初期化がmysql_install_dbから'''mysqld --initialize'''に
+変更になった。
 
-docker-entrypoint.sh$B$r8x<0$N:G?7HG$rMxMQ$7$F:n@.$7$?0Y(Bdocker-entrypoint.sh$B$N(B
-$BCf$G(B'''mysqld --initialize-insecure'''$B$r;H$C$F$$$k2U=j$,M-$j!"(BMySQL$B$N%P!<%8%g%s(B
-$B$O(B5.7.6$B0J9_$N%P!<%8%g%s$H$7$?!#(B
-$BJdB-!'$h$/9M$($?$i(B5.6$B$N%P!<%8%g%s;H$C$F$k(BMySQL$B$N(Bdocker$B%$%a!<%8$,M-$k$o$1(B
-$B$@$+$i$=$C$A$N(Bdocker-entrypoint.sh$B$J$i5lMh$N$d$jJ}$J$s$8$c$J$$$+!)$H;W$$(B
-$B3NG'$7$F$_$?$i$d$C$Q$=$&$@$C$?!#8=;~E@!J(B2016$BG/(B5$B7n(B1$BF|!K$G!"(B
-'''mysqld --initialize-insecure'''$B$,$I$NDxEY$3$J$l$F$k$N$+$OITL@$@$,!"(B
-$B$^!<:#8e$O$3$l$,%9%?%s%@!<%I$K$J$k$O$:$J$N$G!"NI$7$H$9$k!#(B
+docker-entrypoint.shを公式の最新版を利用して作成した為docker-entrypoint.shの
+中で'''mysqld --initialize-insecure'''を使っている箇所が有り、MySQLのバージョン
+は5.7.6以降のバージョンとした。
+補足：よく考えたら5.6のバージョン使ってるMySQLのdockerイメージが有るわけ
+だからそっちのdocker-entrypoint.shなら旧来のやり方なんじゃないか？と思い
+確認してみたらやっぱそうだった。現時点（2016年5月1日）で、
+'''mysqld --initialize-insecure'''がどの程度こなれてるのかは不明だが、
+まー今後はこれがスタンダードになるはずなので、良しとする。
 
 Vagrant
 
