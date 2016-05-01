@@ -14,11 +14,12 @@
 
 Docker 
 - centos-lnmx
+
 **CentOS 6.7（Packerから独自で作成したもの）**<br>
 **MySQL 5.7.12**<br>
 **HHVM 3.2.0 （PHP仮想実行環境）**<br>
 
-MySQLは公式の*docker-entorypoint.sh**を使う為、**5.7.12**を使用。
+MySQLは公式の**docker-entorypoint.sh**を使う為、**5.7.12**を使用。
 _5.7.6_以降から、初期化が`mysql_install_db`から`mysqld --initialize`に
 変更になった。
 
