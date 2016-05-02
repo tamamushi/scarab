@@ -11,7 +11,6 @@ RUN set -x \
 	&& yum -y install expect > /dev/null 2>&1 \
 	&& yum -y install http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm > /dev/null \
 	&& yum -y install mysql-community-server-${MYSQL_VERSION} > /dev/null 2>&1 \
-	&& yum clean all \
 	&& sed -Ei 's/^(bind-address|log)/#&/' /etc/my.cnf \
 	&& echo -e 'skip-host-cache\nskip-name-resolve\ncharacter-set-server = utf8\nuser = mysql' | awk \
 		'{ print } $1 == "[mysqld]" && c == 0 { c = 1; system("cat") }' /etc/my.cnf > /tmp/my.cnf \
@@ -37,6 +36,10 @@ RUN set -x \
 COPY httpd.conf /etc/httpd/conf/httpd.conf
 COPY php.ini /etc/hhvm/php.ini
 COPY server.hdf /etc/hhvm/server.hdf
+COPY hhvm /etc/init.d/hhvm
+
+RUN set -x \
+	&& yum clean all && rm -rf /var/tmp/* && chmod +x /etc/init.d/hhvm
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 EXPOSE 3306 80
