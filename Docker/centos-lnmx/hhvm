@@ -1,0 +1,70 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          Upstart HHVM Daemon
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start|Stop HHVM daemon
+# Description:       HHVM is an open-source virtual machine
+#                    designed for executing programs written in Hack and PHP.
+### END INIT INFO
+ 
+#1
+HHVM=/usr/bin/hhvm
+ 
+test -x $HHVM || exit 0
+ 
+#2
+HHVMDIR=/etc/hhvm/
+CONFIG=server.hdf
+PHPINI=php.ini
+PORT=9000
+RED="\e[01;31"
+COLORLESS="\e["
+PID=/var/run/hhvm/pid
+ESCEND=m
+ 
+case "$1" in
+  start)
+        #3
+        if [ ! -d /var/run/hhvm ]; then
+          mkdir /var/run/hhvm
+        fi
+ 
+        $HHVM --config $HHVMDIR$CONFIG --config $HHVMDIR$PHPINI --mode daemon -vServer.Type=fastcgi -vServer.Port=$PORT -vPidFile=$PID
+		echo "${RED}${ESCEND} * HHVM is running..."
+        echo "${COLORLESS}${ESCEND}"
+        ;;
+ 
+  stop)
+        #4
+        start-stop-daemon --stop --quiet --oknodo --pidfile $PID
+        echo "${RED}${ESCEND} * HHVM is stopped."
+        echo "${COLORLESS}${ESCEND}"
+        ;;
+ 
+  reload|force-reload|restart|try-restart)
+        $0 stop
+        $0 start
+        ;;
+ 
+  status)
+        #5
+        ps -ef | grep $HHVM | grep -v grep | grep -v status
+        if [ "$?" -eq 0 ]
+        then
+          echo "${RED}${ESCEND} * HHVM is running..."
+          echo "${COLORLESS}${ESCEND}"
+        else
+          echo "${RED}${ESCEND} * HHVM is stopped."
+          echo "${COLORLESS}${ESCEND}"
+        fi
+        ;;
+ 
+  *)
+        echo "Usage: service hhvm {start|stop|restart|status}"
+        exit 1
+esac
+ 
+exit 0
