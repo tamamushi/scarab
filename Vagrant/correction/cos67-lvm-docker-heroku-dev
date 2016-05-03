@@ -9,7 +9,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	config.vm.box		= "cos67-lvm" 
 
 	BOX_FILE="CentOS-6.7-x86_64-lvm-with-docker.box"
-	BOX_URL="https://s3-ap-northeast-1.amazonaws.com/opendoc/${BOX_FILE}"
+	BOX_URL="https://s3-ap-northeast-1.amazonaws.com/opendoc/" + BOX_FILE
 
 #	後で汎用性持たせる為にリモートスクリプトをキックして環境適応した値を
 #	返すよような仕組みを実行する。
@@ -105,7 +105,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		curl -skL ${GIST_URL}/ed1766e98d59beb076a385135a7d5d0b1280e615/env.rbenv | cat > /etc/profile.d/rbenv.sh
 		#echo -e "bundler" >> ${UHOME}/.rbenv/default-gems
 		if [ -d /pkgsrc/rbenv ]; then
-			PYEXTRA="RUBY_BUILD_CACHE_PATH='/pkgsrc/rbenv'
+			PYEXTRA="RUBY_BUILD_CACHE_PATH='/pkgsrc/rbenv'"
 		fi
 		sudo -i -u ${USERNAME} sh -c "CONFIGURE_OPTS='--disable-install-rdoc' ${PYEXTRA} rbenv install ${RUBY_VERSION}";
 		calc_duration ${TIME_START} `date +%s`
