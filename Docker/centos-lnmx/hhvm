@@ -1,0 +1,77 @@
+#!/bin/bash
+#
+#	/etc/rc.d/init.d/hhvm
+#
+# Starts the hhvm daemon
+#
+# chkconfig: 345 26 74
+# description: HHVM (aka the HipHop Virtual Machine) is an open-source virtual machine designed for executing programs written in Hack and PHP
+# processname: hhvm
+
+### BEGIN INIT INFO
+# Provides:          Upstart HHVM Daemon
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start|Stop HHVM daemon
+# Description:       HHVM is an open-source virtual machine
+#                    designed for executing programs written in Hack and PHP.
+### END INIT INFO
+
+#1
+HHVM=/usr/bin/hhvm
+ 
+test -x $HHVM || exit 0
+ 
+#2
+HHVMDIR=/etc/hhvm/
+CONFIG=server.hdf
+PHPINI=php.ini
+PORT=9000
+PID=/var/run/hhvm/pid
+ESCEND=m
+ 
+case "$1" in
+  start)
+        #3
+        if [ ! -d /var/run/hhvm ]; then
+          mkdir /var/run/hhvm
+        fi
+ 
+        $HHVM --config $HHVMDIR$CONFIG --config $HHVMDIR$PHPINI --mode daemon -vServer.Type=fastcgi -vServer.Port=$PORT -vPidFile=$PID
+        echo "* HHVM is running..."
+        echo ""
+        ;;
+ 
+  stop)
+        #4
+        kill -9 `cat $PID`
+        echo "* HHVM is stopped."
+        echo ""
+        ;;
+ 
+  reload|force-reload|restart|try-restart)
+        $0 stop
+        $0 start
+        ;;
+ 
+  status)
+        #5
+        ps -ef | grep $HHVM | grep -v grep | grep -v status
+        if [ "$?" -eq 0 ]
+        then
+          echo "${RED}${ESCEND} * HHVM is running..."
+          echo "${COLORLESS}${ESCEND}"
+        else
+          echo "${RED}${ESCEND} * HHVM is stopped."
+          echo "${COLORLESS}${ESCEND}"
+        fi
+        ;;
+ 
+  *)
+        echo "Usage: service hhvm {start|stop|restart|status}"
+        exit 1
+esac
+ 
+exit 0

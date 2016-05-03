@@ -37,6 +37,7 @@ RUN set -x \
 COPY httpd.conf /etc/httpd/conf/httpd.conf
 COPY php.ini /etc/hhvm/php.ini
 COPY server.hdf /etc/hhvm/server.hdf
+COPY hhvm /etc/init.d/hhvm
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 EXPOSE 3306 80
