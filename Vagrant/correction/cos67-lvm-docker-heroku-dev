@@ -32,7 +32,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		USERNAME=${ENV_USER:-vagrant}
 		UHOME="/home/${USERNAME}"
 
-		if [ `curl -sl "#{ENV['NPM_LOCAL_REPO']}" | grep '^HTTP.*200'` ]; then
+		if [ ! -z "$(curl -sl "#{ENV['NPM_LOCAL_REPO']}" | grep '^HTTP.*200')" ]; then
 			NPM_LOCAL_REPO="--registry=#{ENV['NPM_LOCAL_REPO']}"
 		fi
 
