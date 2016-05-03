@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #!/bin/bash
 #
 #	/etc/rc.d/init.d/hhvm
@@ -9,9 +8,6 @@
 # description: HHVM (aka the HipHop Virtual Machine) is an open-source virtual machine designed for executing programs written in Hack and PHP
 # processname: hhvm
 
-=======
-#! /bin/sh
->>>>>>> origin/master
 ### BEGIN INIT INFO
 # Provides:          Upstart HHVM Daemon
 # Required-Start:    $remote_fs $syslog
@@ -22,11 +18,7 @@
 # Description:       HHVM is an open-source virtual machine
 #                    designed for executing programs written in Hack and PHP.
 ### END INIT INFO
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> origin/master
 #1
 HHVM=/usr/bin/hhvm
  
@@ -37,11 +29,8 @@ HHVMDIR=/etc/hhvm/
 CONFIG=server.hdf
 PHPINI=php.ini
 PORT=9000
-<<<<<<< HEAD
-=======
 RED="\e[01;31"
 COLORLESS="\e["
->>>>>>> origin/master
 PID=/var/run/hhvm/pid
 ESCEND=m
  
@@ -53,26 +42,13 @@ case "$1" in
         fi
  
         $HHVM --config $HHVMDIR$CONFIG --config $HHVMDIR$PHPINI --mode daemon -vServer.Type=fastcgi -vServer.Port=$PORT -vPidFile=$PID
-<<<<<<< HEAD
-        echo "* HHVM is running..."
-        echo ""
-=======
-		echo "${RED}${ESCEND} * HHVM is running..."
-        echo "${COLORLESS}${ESCEND}"
->>>>>>> origin/master
+	echo -e "${RED}${ESCEND} * HHVM is running... ${COLORLESS}${ESCEND}"
         ;;
  
   stop)
         #4
-<<<<<<< HEAD
         kill -9 `cat $PID`
-        echo "* HHVM is stopped."
-        echo ""
-=======
-        start-stop-daemon --stop --quiet --oknodo --pidfile $PID
-        echo "${RED}${ESCEND} * HHVM is stopped."
-        echo "${COLORLESS}${ESCEND}"
->>>>>>> origin/master
+        echo -e "${RED}${ESCEND} * HHVM is stopped.${COLORLESS}${ESCEND}"
         ;;
  
   reload|force-reload|restart|try-restart)

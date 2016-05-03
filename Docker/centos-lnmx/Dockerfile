@@ -38,7 +38,7 @@ COPY php.ini.default56 /etc/hhvm/php.ini
 COPY server.hdf /etc/hhvm/server.hdf
 COPY hhvm /etc/init.d/hhvm
 
-RUN	yum clean all && rm -rf /tmp/* 
+RUN	yum remove -y bind-libs.x86_64 bind-utils.x86_64 && yum clean all && rm -rf /tmp/*
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 EXPOSE 3306 80
