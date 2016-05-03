@@ -15,7 +15,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #	返すよような仕組みを実行する。
 #	BOX_DIR="~/GoogleDrive/box_build/vagrant_box/${BOX_FILE}"
 
-	config.vm.box_url	=  ${BOX_URL}
+	config.vm.box_url	=  BOX_URL
 
 	config.vm.network "private_network", ip: "#{ENV['PRIVATE_NETWORK_IP_ADDRESS']}"
 	config.vm.network "public_network", ip: "#{ENV['PUBLIC_NETWORK_IP_ADDRESS']}", bridge: "#{ENV['PUBLIC_NETWORK_INTERFACE']}"
