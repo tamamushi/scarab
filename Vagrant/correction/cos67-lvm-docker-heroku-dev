@@ -7,7 +7,16 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	config.vm.box		= "cos67-lvm" 
-	config.vm.box_url	= "~/GoogleDrive/box_build/vagrant_box/CentOS-6.7-x86_64-lvm-with-docker.box"
+
+	BOX_FILE="CentOS-6.7-x86_64-lvm-with-docker.box"
+	BOX_URL="https://s3-ap-northeast-1.amazonaws.com/opendoc/" + BOX_FILE
+
+#	後で汎用性持たせる為にリモートスクリプトをキックして環境適応した値を
+#	返すよような仕組みを実行する。
+#	BOX_DIR="~/GoogleDrive/box_build/vagrant_box/${BOX_FILE}"
+
+	config.vm.box_url	=  BOX_URL
+
 	config.vm.network "private_network", ip: "#{ENV['PRIVATE_NETWORK_IP_ADDRESS']}"
 	config.vm.network "public_network", ip: "#{ENV['PUBLIC_NETWORK_IP_ADDRESS']}", bridge: "#{ENV['PUBLIC_NETWORK_INTERFACE']}"
 
@@ -22,11 +31,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		ENV_USER="#{ENV['USER_NAME']}"
 		USERNAME=${ENV_USER:-vagrant}
 		UHOME="/home/${USERNAME}"
-		[ ! -z ${NPM_LOCAL_REPO:="#{ENV['NPM_LOCAL_REPO']}"} ] && NPM_LOCAL_REPO="--registry=#{ENV['NPM_LOCAL_REPO']}"
+
+		if [ ! -z "$(curl -sl "#{ENV['NPM_LOCAL_REPO']}" | grep '^HTTP.*200')" ]; then
+			NPM_LOCAL_REPO="--registry=#{ENV['NPM_LOCAL_REPO']}"
+		fi
 
 		PYTHON_VERSION="2.7.10"
 		RUBY_VERSION="2.2.3"
-		NODEJS_VERSION="0.12.7"
+		NODEJS_VERSION="0.12.13"
 
 		calc_duration()
 		{
@@ -37,8 +49,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		}
 
 		TIME_START=`date +%s`
-		cp /pkgsrc/local.repo /etc/yum.repos.d/
+
+		if [ -f /pkgsrc/local.repo ];then
+				cp /pkgsrc/local.repo /etc/yum.repos.d/
+		fi
 		mkdir -p /var/provision
+
 		## python2.7 install
 		if [ ! -f /var/provision/devtool ]; then
 				echo "##############[Starting installation Development tools]##############";
@@ -66,7 +82,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 		yum localinstall -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm > /dev/null
 		yum localinstall -y http://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-11.ius.centos6.noarch.rpm > /dev/null
-		sudo -i -u ${USERNAME} sh -c "export PYTHON_BUILD_CACHE_PATH='/pkgsrc/pyenv'; pyenv install ${PYTHON_VERSION}";
+		if [ -d /pkgsrc/pyenv ]; then
+			PYEXTRA="PYTHON_BUILD_CACHE_PATH='/pkgsrc/pyenv'"
+		fi
+		sudo -i -u ${USERNAME} sh -c "export DUMMY="" ${PYEXTRA}; pyenv install ${PYTHON_VERSION}";
 		calc_duration ${TIME_START} `date +%s`
 
 		## rbenv install.
@@ -85,7 +104,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 		curl -skL ${GIST_URL}/ed1766e98d59beb076a385135a7d5d0b1280e615/env.rbenv | cat > /etc/profile.d/rbenv.sh
 		#echo -e "bundler" >> ${UHOME}/.rbenv/default-gems
-		sudo -i -u ${USERNAME} sh -c "CONFIGURE_OPTS='--disable-install-rdoc' RUBY_BUILD_CACHE_PATH='/pkgsrc/rbenv' rbenv install ${RUBY_VERSION}";
+		if [ -d /pkgsrc/rbenv ]; then
+			PYEXTRA="RUBY_BUILD_CACHE_PATH='/pkgsrc/rbenv'"
+		fi
+		sudo -i -u ${USERNAME} sh -c "CONFIGURE_OPTS='--disable-install-rdoc' ${PYEXTRA} rbenv install ${RUBY_VERSION}";
 		calc_duration ${TIME_START} `date +%s`
 
 		### nodebrew Install

@@ -1,4 +1,13 @@
-#! /bin/sh
+#!/bin/bash
+#
+#	/etc/rc.d/init.d/hhvm
+#
+# Starts the hhvm daemon
+#
+# chkconfig: 345 26 74
+# description: HHVM (aka the HipHop Virtual Machine) is an open-source virtual machine designed for executing programs written in Hack and PHP
+# processname: hhvm
+
 ### BEGIN INIT INFO
 # Provides:          Upstart HHVM Daemon
 # Required-Start:    $remote_fs $syslog
@@ -9,7 +18,7 @@
 # Description:       HHVM is an open-source virtual machine
 #                    designed for executing programs written in Hack and PHP.
 ### END INIT INFO
- 
+
 #1
 HHVM=/usr/bin/hhvm
  
@@ -33,15 +42,13 @@ case "$1" in
         fi
  
         $HHVM --config $HHVMDIR$CONFIG --config $HHVMDIR$PHPINI --mode daemon -vServer.Type=fastcgi -vServer.Port=$PORT -vPidFile=$PID
-		echo "${RED}${ESCEND} * HHVM is running..."
-        echo "${COLORLESS}${ESCEND}"
+	echo -e "${RED}${ESCEND} * HHVM is running... ${COLORLESS}${ESCEND}"
         ;;
  
   stop)
         #4
-        start-stop-daemon --stop --quiet --oknodo --pidfile $PID
-        echo "${RED}${ESCEND} * HHVM is stopped."
-        echo "${COLORLESS}${ESCEND}"
+        kill -9 `cat $PID`
+        echo -e "${RED}${ESCEND} * HHVM is stopped.${COLORLESS}${ESCEND}"
         ;;
  
   reload|force-reload|restart|try-restart)
