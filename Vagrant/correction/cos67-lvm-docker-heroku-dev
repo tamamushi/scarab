@@ -141,7 +141,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		echo 'PATH="/usr/local/heroku/bin:$PATH"' >> ${UHOME}/.bash_profile
 
 		echo "...Add vagrant user to docker group"
-		usermod -aG docker vagran
+		usermod -aG docker vagrant
 
 		calc_duration ${TIME_START} `date +%s`
 EOT
