@@ -37,6 +37,7 @@ RUN set -x \
 	&& yum clean all && rm -rf /var/tmp/* 
 
 COPY httpd.conf /etc/httpd/conf/httpd.conf
+COPY php.ini.default56 /etc/php.ini
 #COPY php.ini /etc/hhvm/php.ini
 #COPY server.hdf /etc/hhvm/server.hdf
 #COPY hhvm /etc/init.d/hhvm
