@@ -20,26 +20,26 @@ VOLUME /var/lib/mysql
 VOLUME /var/www/html
 COPY docker-entrypoint.sh /usr/local/bin/
 
+#	&& curl -nL http://www.hop5.in/yum/el6/hop5.repo > /etc/yum.repos.d/hop5.repo \
+#	&& yum -y install https://s3-ap-northeast-1.amazonaws.com/opendoc/apr-1.5.2-1.x86_64.rpm \
+#	 https://s3-ap-northeast-1.amazonaws.com/opendoc/apr-util-1.5.4-1.x86_64.rpm \
+#	 https://s3-ap-northeast-1.amazonaws.com/opendoc/libmcrypt-2.5.8-9.el6.x86_64.rpm \
+#	 https://s3-ap-northeast-1.amazonaws.com/opendoc/liblcms2-2.4-1.el6.x86_64.rpm \
+#	 https://s3-ap-northeast-1.amazonaws.com/opendoc/httpd-2.4.20-1.x86_64.rpm \
+#	 hhvm > /dev/null 2>&1 \
+
 RUN set -x \
+	&& yum install -y httpd php php-pear php-mbstring php-gd php-mysql > /dev/null 2>&1 \
 	&& chmod +x /usr/local/bin/docker-entrypoint.sh \
 	&& ln -s /usr/local/bin/docker-entrypoint.sh /entrypoint.sh \
-	&& curl -nL http://www.hop5.in/yum/el6/hop5.repo > /etc/yum.repos.d/hop5.repo \
-	&& yum -y install https://s3-ap-northeast-1.amazonaws.com/opendoc/apr-1.5.2-1.x86_64.rpm \
-	 https://s3-ap-northeast-1.amazonaws.com/opendoc/apr-util-1.5.4-1.x86_64.rpm \
-	 https://s3-ap-northeast-1.amazonaws.com/opendoc/libmcrypt-2.5.8-9.el6.x86_64.rpm \
-	 https://s3-ap-northeast-1.amazonaws.com/opendoc/liblcms2-2.4-1.el6.x86_64.rpm \
-	 https://s3-ap-northeast-1.amazonaws.com/opendoc/httpd-2.4.20-1.x86_64.rpm \
-	 hhvm > /dev/null 2>&1 \
 	&& mkdir -p /var/run/hhvm /var/log/hhvm /var/log/httpd \
-	&& chown apache:apache /var/run/hhvm /var/log/hhvm /var/log/httpd
+	&& chown apache:apache /var/run/hhvm /var/log/hhvm /var/log/httpd \
+	&& yum clean all && rm -rf /var/tmp/* 
 
 COPY httpd.conf /etc/httpd/conf/httpd.conf
-COPY php.ini /etc/hhvm/php.ini
-COPY server.hdf /etc/hhvm/server.hdf
-COPY hhvm /etc/init.d/hhvm
-
-RUN set -x \
-	&& yum clean all && rm -rf /var/tmp/* && chmod +x /etc/init.d/hhvm
+#COPY php.ini /etc/hhvm/php.ini
+#COPY server.hdf /etc/hhvm/server.hdf
+#COPY hhvm /etc/init.d/hhvm
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 EXPOSE 3306 80
