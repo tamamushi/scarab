@@ -128,5 +128,4 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 fi
 
 service httpd start
-service hhvm start
 exec "$@"
