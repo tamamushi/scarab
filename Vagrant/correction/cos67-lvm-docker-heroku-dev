@@ -140,6 +140,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		wget -qO- https://toolbelt.heroku.com/install.sh | sh
 		echo 'PATH="/usr/local/heroku/bin:$PATH"' >> ${UHOME}/.bash_profile
 
+		echo "...Add vagrant user to docker group"
+		usermod -aG docker vagran
+
 		calc_duration ${TIME_START} `date +%s`
 EOT
 	end
