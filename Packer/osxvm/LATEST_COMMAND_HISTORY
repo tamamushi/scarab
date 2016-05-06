@@ -1,0 +1,4 @@
+packer build -var iso_checksum=c1b5bb61fead5cea1cd7a2bab2d63a89 -var iso_url=../OSX_InstallESD_10.11.3_15D21.dmg -var autologin=true -only virtualbox-iso template.json
+sudo sh prepare_iso/prepare_iso.sh /Applications/Install\ OS\ X\ El\ Capitan.app/Contents/SharedSupport/InstallESD.dmg .
+
+https://github.com/timsutton/osx-vm-templates
