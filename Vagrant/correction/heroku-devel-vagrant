@@ -122,6 +122,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		echo "[Starting installation MySQL community server]"
 		#yum -y install http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm  > /dev/null
 		yum -y install mysql-community-server > /dev/null
+		yum -y install mysql-devel 
 		chkconfig mysqld on
 
 		if [ ! `yum list installed | grep mysql-community-server` ]; then

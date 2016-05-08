@@ -142,6 +142,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 		echo "...Add vagrant user to docker group"
 		usermod -aG docker vagrant
+		chkconfig docker on
+		service docker start
 
 		calc_duration ${TIME_START} `date +%s`
 EOT
