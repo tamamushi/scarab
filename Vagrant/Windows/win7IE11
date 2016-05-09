@@ -8,7 +8,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	config.vm.box		= "win7IE11" 
 
-	BOX_FILE="IE11+-+Win7.box"
+	BOX_FILE="IE11-Win7_1.1.box"
 	BOX_URL="https://s3-ap-northeast-1.amazonaws.com/opendoc/" + BOX_FILE
 
 #	後で汎用性持たせる為にリモートスクリプトをキックして環境適応した値を
@@ -16,6 +16,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #	BOX_DIR="~/GoogleDrive/box_build/vagrant_box/${BOX_FILE}"
 
 	config.vm.box_url	=  BOX_URL
+	config.vm.boot_timeout = 120
 
 	config.vm.provider "virtualbox" do |vb|
 		vb.customize ["modifyvm", :id, "--memory", "1024"]
@@ -23,22 +24,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		vb.customize ["modifyvm", :id, "--cpus", 	"2"]
 		vb.customize ["modifyvm", :id, "--natdnsproxy1", 	"on"]
 		vb.customize ["modifyvm", :id, "--natdnshostresolver1", 	"on"]
-#		vb.customize ["modifyvm", :id, "--nic2", "hostonly" ]
+		vb.customize ["modifyvm", :id, "--nic2", "hostonly" ]
 		vb.customize ["modifyvm", :id, "--nic3", "bridged" ]
 		vb.customize ["guestproperty", "set", :id, "/VirtualBox/GuestAdd/VboxService/--timesync-set-threshold", 10000 ]
 		vb.gui	= true
 	end
 
-	config.vm.network "private_network", ip: "#{ENV['PRIVATE_NETWORK_IP_ADDRESS']}", nic_type: "82540EM"
-	config.vm.network "public_network", ip: "#{ENV['PUBLIC_NETWORK_IP_ADDRESS']}", bridge: "#{ENV['PUBLIC_NETWORK_INTERFACE']}", nic_type: "82540EM"
-	config.vm.boot_timeout = 60
+	config.vm.network "private_network", ip: "192.168.33.0", nic_typ: "82540EM", type: "dhcp", dhcp_lower:"192.168.33.50", dchp_upper: "192.168.33.80"
+	config.vm.network "public_network", type: "dhcp", bridge: "#{ENV['PUBLIC_NETWORK_INTERFACE']}", nic_type: "82540EM"
 
-	config.vm.guest = :windows
-	config.vm.network :forwarded_port, guest: 3389, host: 53389
-	config.vm.network :forwarded_port, guest: 5985, host: 55985, id: "winrm", auto_correct: true
-	config.vm.network :forwarded_port, guest: 5555,  host: 5555
+#	config.vm.network :forwarded_port, guest: 3389, host: 53389
+#	config.vm.network :forwarded_port, guest: 5985, host: 55985, id: "winrm", auto_correct: true
+#	config.vm.network :forwarded_port, guest: 5555,  host: 5555
 
 	config.vm.communicator	= "winrm"
+	config.vm.guest			= :windows
 	config.winrm.username	= "IEUser"
 	config.winrm.password	= "Passw0rd!"
 	config.winrm.host		= "localhost"
