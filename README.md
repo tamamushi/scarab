@@ -32,6 +32,18 @@ MySQLは公式の**docker-entorypoint.sh**を使う為、**5.7.12**を使用。
 `mysqld --initialize-insecure`がどの程度こなれてるのかは不明だが、
 まー今後はこれがスタンダードになるはずなので、良しとする。
 
-Vagrant
+###Vagrant構築方法
+
+-前提条件
+vagrantは事前にインストールしておく
+
+https://www.vagrantup.com/
+
+*特定のディレクトリで、git clone https://githubアカウント@github.com/tamamushi/scarab.gitを実行
+*./scarab/Vagrant/CentOS/cos67-lvm-docker-heroku-dev をvagrantを実行させるディレクトリにVagrantfileとしてコピー
+*Vagrantfileをコピーしたディレクトリに移動してvagrant upコマンドを実行
+*vagrant sshで起動したvagrantにsshログイン
+
+
 
 
