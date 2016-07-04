@@ -17,11 +17,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 	config.vm.box_url	=  BOX_URL
 
-	config.vm.network "private_network", ip: "#{ENV['PRIVATE_NETWORK_IP_ADDRESS']}"
-	config.vm.network "public_network", ip: "#{ENV['PUBLIC_NETWORK_IP_ADDRESS']}", bridge: "#{ENV['PUBLIC_NETWORK_INTERFACE']}"
-
-	config.vm.synced_folder "./data", "/vagrant_data"
-	config.vm.synced_folder "#{ENV['PACKAGE_SRC_FOLDER']}", "/pkgsrc"
+	config.vm.network "private_network", ip: "192.168.33.10"
+        config.vm.network "public_network", ip: "dhcp"
+        
+	#config.vm.synced_folder "./data", "/vagrant_data"
+	#config.vm.synced_folder "#{ENV['PACKAGE_SRC_FOLDER']}", "/pkgsrc"
 	config.vm.provider "virtualbox" do |vb|
 		vb.memory = "1024"
 	end
