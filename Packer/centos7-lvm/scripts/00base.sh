@@ -15,8 +15,10 @@ gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
 EOM
 
-sudo yum -y install gcc make automake autoconf libtool gcc-c++ kernel-devel-`uname -r` perl
-sudo yum -y install openssl-devel zlib-devel realine-devel sqlite-devel wget bind-utils bzip2 git
+sudo yum -y install gcc make automake autoconf libtool gcc-c++ kernel-devel-`uname -r`
+sudo yum -y install openssl-devel zlib-devel realine-devel sqlite-devel bind-utils bzip2-devel
+sudo yum -y install libcurl-devel
+sudo yum -y install sqlite perl git bzip2 wget
 sudo yum -y --enablerepo=epel install dkms
 
 # Vagrant用の公開鍵を登録
