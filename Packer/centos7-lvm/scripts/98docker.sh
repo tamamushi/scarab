@@ -1,21 +1,17 @@
 #!/bin/sh
 
+USER=${SSH_USERNAME:-vagrant}
+
 echo "==> Run the Docker installation script"
-PKG_NAME="docker-ce.x86_64"
-echo $PKG_NAME
-PKG=`yum list "${PKG_NAME}" | grep "${PKG_NAME}" | awk '{print "docker-ce-"$2}'`
-echo $PKG
-yum install -y ${PKG}
+yum install -y docker
 
 echo "==> Create the docker group"
 # Add the docker group if it doesn't already exist
-groupadd docker
+sudo groupadd docker
 
 echo "==> Add the connected "${USER}" to the docker group."
-gpasswd -a ${USER} docker
-gpasswd -a ${SSH_USERNAME} docker
-
-usermod -aG docker ${SSH_USERNAME}
+sudo gpasswd -a ${USER} docker
+usermod -aG docker ${USER}
 
 echo "==> Starting docker"
 sudo systemctl start docker
