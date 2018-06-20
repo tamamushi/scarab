@@ -1,12 +1,15 @@
 # -*- mode: ruby -*-
-# vi: set ft=ruby :
+# vi: set ts=4 : 
 
-# All Vagrant configuration is done below. The "2" in Vagrant.configure
-# configures the configuration version (we support older styles for
-# backwards compatibility). Please don't change it unless you know what
-# you're doing.
-Vagrant.configure("2") do |config|
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "cos7-lvm"
+
+  BOX_FILE="CentOS-7-x86_64-lvm-with-docker.box"
+  BOX_URL="https://s3-ap-northeast-1.amazonaws.com/opendoc/" + BOX_FILE
+
+  config.vm.box_url	= BOX_URL
   config.vm.provider 'virtualbox' do |vb|
     vb.gui = true
     vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
