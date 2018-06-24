@@ -6,12 +6,16 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "cos7-lvm"
 
+
   BOX_FILE="CentOS-7-x86_64-lvm-with-docker.box"
   BOX_URL="https://s3-ap-northeast-1.amazonaws.com/opendoc/" + BOX_FILE
 
+  config.vm.network :public_network, ip: "192.168.1.5"
+  config.vm.network :private_network, ip: "192.168.33.10"
+
   config.vm.box_url	= BOX_URL
   config.vm.provider 'virtualbox' do |vb|
-    vb.gui = true
+    ## vb.gui = true
     vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
   end
 end

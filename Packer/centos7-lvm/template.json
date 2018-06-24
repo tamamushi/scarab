@@ -8,8 +8,10 @@
       "scripts": [
         "scripts/00base.sh",
         "scripts/80develop_env.sh",
+        "scripts/81git.sh",
         "scripts/90virtualbox.sh",
-        "scripts/98docker.sh"
+        "scripts/98docker.sh",
+        "scripts/99cleanup.sh"
       ],
       "environment_vars": [
          "DOCKER=true",

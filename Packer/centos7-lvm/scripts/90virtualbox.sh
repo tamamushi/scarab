@@ -1,9 +1,11 @@
 #!/bin/bash -eux
 
+STAGE="[90vritualbox.sh]"
+
 SSH_USER=${SSH_USERNAME:-vagrant}
 SSH_USER_HOME=${SSH_USER_HOME:-/home/${SSH_USER}}
 
-    echo "==> Installing VirtualBox guest additions"
+    echo "==>${STAGE}: Installing VirtualBox guest additions"
     # Assume that we've installed all the prerequisites:
     # kernel-headers-$(uname -r) kernel-devel-$(uname -r) gcc make perl
     # from the install media via ks.cfg
@@ -19,5 +21,5 @@ if [[ $VBOX_VERSION = "4.3.10" ]]; then
 	ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions
 fi
 
-echo "==> Removing packages needed for building guest tools"
-yum -y remove gcc cpp libmpc mpfr kernel-devel kernel-headers perl
+## echo "==>${STAGE}: Removing packages needed for building guest tools"
+## yum -y remove gcc cpp libmpc mpfr kernel-devel kernel-headers perl >> /dev/null
